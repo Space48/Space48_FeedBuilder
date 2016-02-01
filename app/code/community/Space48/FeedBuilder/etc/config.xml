@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <modules>
+        <Space48_FeedBuilder>
+            <version>0.0.1</version>
+        </Space48_FeedBuilder>
+    </modules>
+    <global>
+        <models>
+            <space48_feedbuilder>
+                <class>Space48_FeedBuilder_Model</class>
+            </space48_feedbuilder>
+        </models>
+        <helpers>
+            <space48_feebuilder>
+                <class>Space48_FeedBuilder_Helper</class>
+            </space48_feebuilder>
+        </helpers>
+    </global>
+    <space48_feedbuilder>
+        <feeds>
+            <sample_csv>
+                <status>enabled</status>
+                <name>Sample CSV Feed</name>
+                <schedule>
+                    <cron_expr>0 1 * * *</cron_expr>
+                </schedule>
+                <file_name>s48_feedbuilder/sample_product.csv</file_name>
+                <feed_writer_model>
+                    <class>Space48_FeedBuilder_Model_Writer_Csv</class>
+                </feed_writer_model>
+                <feed_data_model>
+                    <class>Space48_FeedBuilder_Model_Data_ProductExtensible</class>
+                </feed_data_model>
+                <feed_fields>
+                    <product_ref>entity_id</product_ref>
+                    <sku>sku</sku>
+                    <price>
+                        <class>Space48_FeedBuilder_Model_Data_Attribute_ProductFinalPrice</class>
+                    </price>
+                    <product_image>
+                        <class>Space48_FeedBuilder_Model_Data_Attribute_ProductImage</class>
+                    </product_image>
+                </feed_fields>
+            </sample_csv>
+        </feeds>
+    </space48_feedbuilder>
+
+    <crontab>
+        <jobs>
+            <space48_feedbuilder>
+                <schedule>
+                    <cron_expr>* * * * *</cron_expr>
+                </schedule>
+                <run>
+                    <model>space48_feedbuilder/runner::run</model>
+                </run>
+            </space48_feedbuilder>
+        </jobs>
+    </crontab>
+
+</config>

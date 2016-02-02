@@ -1,6 +1,6 @@
 <?php
 
-require_once('../../../../../../shell/abstract.php');
+require_once('../../../../../../../shell/abstract.php');
 
 class Space48_FeedBuilder_Shell_FeedBuilder extends Mage_Shell_Abstract
 {

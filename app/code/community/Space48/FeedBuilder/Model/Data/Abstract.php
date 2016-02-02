@@ -9,9 +9,14 @@ class Space48_FeedBuilder_Model_Data_Abstract
     protected $_maxIterations;
     protected $_lastPage;
     protected $_feedAttributes = array();
+    protected $_feedFilters = array();
 
     public function addFeedAttribute($feedFieldName, Space48_FeedBuilder_Model_Data_Attribute_Abstract $attributeModel) {
         $this->_feedAttributes[$feedFieldName] = $attributeModel;
+    }
+
+    public function addFeedFilter($feedFieldFilterName, Space48_FeedBuilder_Model_Data_Filter_Abstract $filterModel) {
+        $this->_feedFilters[$feedFieldFilterName] = $filterModel;
     }
 
     protected function _addCollectionJoins()
@@ -36,6 +41,17 @@ class Space48_FeedBuilder_Model_Data_Abstract
         }
     }
 
+    protected function _addCollectionFilters()
+    {
+        /**
+         * @var  $feedFilterName string
+         * @var  $filterModel Space48_FeedBuilder_Model_Data_Filter_Abstract
+         */
+        foreach ($this->getFeedFilters() as $feedFilterName => $filterModel) {
+            $this->_collection = $filterModel->addFilter($this->_collection);
+        }
+    }
+
     protected function _addCalculatedFields($item)
     {
         /**
@@ -52,6 +68,11 @@ class Space48_FeedBuilder_Model_Data_Abstract
     public function getFeedAttributes()
     {
         return $this->_feedAttributes;
+    }
+
+    public function getFeedFilters()
+    {
+        return $this->_feedFilters;
     }
 
     public function getFields()
@@ -93,6 +114,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
         } elseif (is_null($this->_lastPage)) {
             $this->_addCollectionJoins();
             $this->_addCollectionAttributes();
+            $this->_addCollectionFilters();
         }
 
         $this->_currentIteration++;
@@ -105,7 +127,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
 
         $this->_lastPage = $this->_collection->getLastPageNumber();
 
-        if($this->_isCollectionProcessingComplete()) {
+        if ($this->_isCollectionProcessingComplete()) {
             $this->_collection = false;
         }
 

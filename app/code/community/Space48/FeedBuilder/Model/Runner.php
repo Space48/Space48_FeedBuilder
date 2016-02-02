@@ -21,9 +21,21 @@ class Space48_FeedBuilder_Model_Runner
     protected function _registerFeeds(array $feedConfigs)
     {
         foreach ($feedConfigs as $feedReference => $feedConfig) {
-            $feed = Mage::getModel('space48_feedbuilder/feed', $feedConfig);
+            if (isset($feedConfig['inherit'])) {
+                $inheritedConfig = $this->_getSpecifiedFeedConfig($feedConfig['inherit'], $feedConfigs);
+                $inheritedConfig = array_merge($inheritedConfig, $feedConfig);
+                $feed = Mage::getModel('space48_feedbuilder/feed', $inheritedConfig);
+            } else {
+                $feed = Mage::getModel('space48_feedbuilder/feed', $feedConfig);
+            }
+
             $this->_allFeeds[$feedReference] = $feed;
         }
+    }
+
+    protected function _getSpecifiedFeedConfig($feedIdentifier, array $feedConfigs)
+    {
+        return isset($feedConfigs[$feedIdentifier]) ? $feedConfigs[$feedIdentifier] : array();
     }
 
     protected function _getValidFeeds(array $requestedFeeds)

@@ -139,3 +139,46 @@ ln -s ../../../../app/code/community/Space48/FeedBuilder FeedBuilder;
     </space48_feedbuilder>
 </config>
 ```
+* To add custom data attributes e.g. Acme_Feeds_Model_Data_Attribute_GoogleProductName
+**IMPORTANT** : Consider if the functionality already available can meet your needs. If not, can the required
+functionality be abstracted and added to the community module?
+    * Create the following folder structure in the local feeds module directory:
+    Model/Data/Attribute
+    * Create the custom Data Attribute as below (GoogleProductName.php):
+    **WHAT GOES IN HERE ? : For examples look at the community data attributes or at the abstract class**
+    
+    
+```php
+<?php
+
+/* 
+ * This field in the feed will contain:
+ * 'Google Feed Description' if it is populated
+ * OR
+ * fall back to the standard 'Short Description'.
+ */
+class Acme_Feeds_Model_Data_Attribute_GoogleProductDescription 
+    extends Space48_FeedBuilder_Model_Data_Attribute_Abstract
+{
+    public function addCollectionAttribute(Varien_Data_Collection $collection)
+    {
+        return $collection->addAttributeToSelect(array('google_feed_description', 'short_description'));
+    }
+
+    public function getValue(Mage_Core_Model_Abstract $model)
+    {
+        return $model->getGoogleFeedDescription() ?
+            $model->getGoogleFeedDescription() :
+            $model->getShortDescription();
+    }
+}
+
+```
+
+##Running the feeds
+The feeds will run in cron as per the defined schedule for each feed.
+A shell script is availble to generate the feeds on demand if required :
+```sh
+cd <magento base directory>/app/code/community/Space48/FeedBuilder/shell;
+php feedBuilder.php --all-feeds
+```

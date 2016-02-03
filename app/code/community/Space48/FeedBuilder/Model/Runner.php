@@ -45,8 +45,8 @@ class Space48_FeedBuilder_Model_Runner
 
     protected function _getScheduledFeeds()
     {
-        /* @TODO : MAKE THIS ONLY RETURN SCHEDULED FEEDS */
-        return $this->getAllFeeds();
+	    return Mage::getModel('space48_feedbuilder/cron_schedule')
+                            ->getScheduledFeeds();
     }
 
     protected function _getFeedsToRun($feedReference)

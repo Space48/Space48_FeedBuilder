@@ -47,7 +47,7 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
      */
     public function updateSchedule()
     {
-        $scheduleAheadFor = Mage::getStoreConfig(Mage_Cron_Model_Observer::XML_PATH_SCHEDULE_AHEAD_FOR)*60;
+        $scheduleAheadFor = Mage::getStoreConfig(Mage_Cron_Model_Observer::XML_PATH_SCHEDULE_AHEAD_FOR)*600;
         $allFeeds = Mage::getModel('space48_feedbuilder/runner')->getAllFeeds();
 
         foreach ($allFeeds as $feedReference => $feed) {
@@ -64,8 +64,9 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
             // Set schedule
             $scheduledAt = $this->_getNextScheduledTime($cronExpr, $scheduleAheadFor);
             if ($scheduledAt) {
-                Mage::getModel('space48_feedbuilder/cron_schedule')
+                $feedSchedule = Mage::getModel('space48_feedbuilder/cron_schedule')
                     ->load($feedReference)
+		    ->setFeedReference($feedReference)
                     ->setScheduledAt($scheduledAt)
                     ->save();
             }
@@ -77,19 +78,17 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
      */
     protected function _getNextScheduledTime($cronExpression, $scheduleAheadFor)
     {
-        $schedule = Mage::getModel('cron/schedule');
-
         $now = time();
         $timeAhead = $now + $scheduleAheadFor;
 
         $nextScheduledTime = null;
         for ($time = $now; $time < $timeAhead; $time += 60) {
             $ts = strftime('%Y-%m-%d %H:%M:00', $time);
-            if (!$schedule->trySchedule($time)) {
+            if (!$this->trySchedule($cronExpression, $time)) {
                 // time does not match cron expression
                 continue;
             }
-            $nextScheduledTime = $time;
+            $nextScheduledTime = $ts;
             break;
         }
 
@@ -101,6 +100,8 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
      */
     public function trySchedule($cronExpr, $time)
     {
+	$schedule = Mage::getModel('cron/schedule');
+
         $cronExpr = preg_split('#\s+#', $cronExpr, null, PREG_SPLIT_NO_EMPTY);
         if (!$cronExpr || !$time) {
             return false;
@@ -111,19 +112,28 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
 
         $d = getdate(Mage::getSingleton('core/date')->timestamp($time));
 
-        $match = $this->matchCronExpression($cronExpr[0], $d['minutes'])
-            && $this->matchCronExpression($cronExpr[1], $d['hours'])
-            && $this->matchCronExpression($cronExpr[2], $d['mday'])
-            && $this->matchCronExpression($cronExpr[3], $d['mon'])
-            && $this->matchCronExpression($cronExpr[4], $d['wday']);
+        $match = $schedule->matchCronExpression($cronExpr[0], $d['minutes'])
+            && $schedule->matchCronExpression($cronExpr[1], $d['hours'])
+            && $schedule->matchCronExpression($cronExpr[2], $d['mday'])
+            && $schedule->matchCronExpression($cronExpr[3], $d['mon'])
+            && $schedule->matchCronExpression($cronExpr[4], $d['wday']);
 
         return $match ? strftime('%Y-%m-%d %H:%M', $time) : false;
     }
 
     public function getScheduledFeeds()
     {
+        /* @TODO : Refactor this code */
         $this->updateSchedule();
-        return $this->getCollection()
+        $scheduledFeeds = $this->getCollection()
             ->addFieldToFilter('scheduled_at', array('lte'=> $this->_executionTime ));
+        $allFeeds = Mage::getModel('space48_feedbuilder/runner')->getAllFeeds();
+
+        $returnArray = array();
+        foreach($scheduledFeeds as $feed) {
+            $returnArray[$feed->getFeedReference()] = $allFeeds[$feed->getFeedReference()];
+        }
+
+        return $returnArray;
     }
 }

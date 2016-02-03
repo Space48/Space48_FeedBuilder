@@ -20,7 +20,7 @@ e.g. Mage::getModel('catalog/product')->load(1)
 * Add this as a submodule of the project and create the relevant symbolic links by doing the following in shell :
 ```sh
 cd <root folder of web directory>;
-git subrepository add <git repository url> .sub_repositories;
+git submodule add <git repository url> .sub_repositories;
 git submodule update --init --recursive;
 mkdir -p app/code/community/Space48;
 cd app/etc/modules/;

@@ -91,6 +91,15 @@ class Space48_FeedBuilder_Model_Runner
         }
     }
 
+    protected function _setFeedReferenceTypeWhenRunAsCron($feedReferenceType)
+    {
+        if (is_object($feedReferenceType) && $feedReferenceType instanceof Mage_Cron_Model_Schedule ) {
+            return self::REFERENCE_SCHEDULED_FEEDS;
+        }
+
+        return $feedReferenceType;
+    }
+
     public function getAllFeeds()
     {
         if (!$this->_allFeeds) {
@@ -103,6 +112,8 @@ class Space48_FeedBuilder_Model_Runner
 
     public function run($feedReferenceType = self::REFERENCE_SCHEDULED_FEEDS)
     {
+        $feedReferenceType = $this->_setFeedReferenceTypeWhenRunAsCron($feedReferenceType);
+
         /**
          * @var  $feedReference string
          * @var  $feedModel Space48_FeedBuilder_Model_Feed

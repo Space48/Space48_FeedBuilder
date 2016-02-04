@@ -95,6 +95,24 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
         return $nextScheduledTime;
     }
 
+    protected function _getScheduledFeed($feedReference)
+    {
+        return Mage::getModel('space48_feedbuilder/cron_schedule')
+                ->load($feedReference);
+    }
+
+    public function setFeedStartedAt($feedReference)
+    {
+        $this->_getScheduledFeed($feedReference)
+            ->setStartedAt($this->_executionTime)->save();
+    }
+
+    public function setFeedFinishedAt($feedReference)
+    {
+        $this->_getScheduledFeed($feedReference)
+            ->setFinishedAt($this->_executionTime)->save();
+    }
+
     /*
      * Uses code from Magento class Mage_Cron_Model_Schedule
      */

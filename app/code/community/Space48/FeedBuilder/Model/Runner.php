@@ -70,6 +70,27 @@ class Space48_FeedBuilder_Model_Runner
         return $feedsToRun;
     }
 
+    protected function _isFeedScheduled($feedReferenceType)
+    {
+        if ($feedReferenceType == self::REFERENCE_SCHEDULED_FEEDS) {
+            return Mage::getModel('space48_feedbuilder/cron_schedule');
+        }
+    }
+
+    protected function _setFeedStartedAtIfScheduled($feedReference, $feedReferenceType)
+    {
+        if ($cronSchedule = $this->_isFeedScheduled($feedReferenceType)) {
+            $cronSchedule->setFeedStartedAt($feedReference);
+        }
+    }
+
+    protected function _setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType)
+    {
+        if ($cronSchedule = $this->_isFeedScheduled($feedReferenceType)) {
+            $cronSchedule->setFeedFinishedAt($feedReference);
+        }
+    }
+
     public function getAllFeeds()
     {
         if (!$this->_allFeeds) {
@@ -80,15 +101,16 @@ class Space48_FeedBuilder_Model_Runner
         return $this->_allFeeds;
     }
 
-    public function run($feedReference = self::REFERENCE_SCHEDULED_FEEDS)
+    public function run($feedReferenceType = self::REFERENCE_SCHEDULED_FEEDS)
     {
         /**
          * @var  $feedReference string
          * @var  $feedModel Space48_FeedBuilder_Model_Feed
          */
-        foreach ($this->_getFeedsToRun($feedReference) as $feedReference => $feedModel) {
+        foreach ($this->_getFeedsToRun($feedReferenceType) as $feedReference => $feedModel) {
+            $this->_setFeedStartedAtIfScheduled($feedReference, $feedReferenceType);
             $feedModel->createFeed();
+            $this->_setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType);
         }
-
     }
 }

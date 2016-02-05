@@ -47,7 +47,7 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
         } elseif (!class_exists($writerModel)) {
             Mage::throwException('Feed writer model does not exist :: ' . $writerModel);
         } else {
-            $this->_writerModel = new $writerModel($this->getFileName());
+            $this->_writerModel = new $writerModel($this->getFileName(), $this->_dataModel);
         }
     }
 
@@ -73,22 +73,19 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
 
     protected function _getFilterModel($feedFilter)
     {
-        if (is_string($feedFilter)) {
-            $feedFilterModel = Mage::getModel('space48_feedbuilder/data_attribute_basic');
-            $feedFilterModel->setDataField($feedFilter);
-        } elseif (is_array($feedFilter) && isset($feedFilter['class'])) {
-            $feedFilterModel = $feedFilter['class'];
-            if (!class_exists($feedFilterModel)) {
-                Mage::throwException('Attribute model does not exist :: ' . $feedFilterModel);
+        if (is_array($feedFilter) && isset($feedFilter['class'])) {
+            $filterModel = $feedFilter['class'];
+            if (!class_exists($filterModel)) {
+                Mage::throwException('Attribute model does not exist :: ' . $filterModel);
             }
 
             $args = isset($feedFilter['args']) ? $feedFilter['args'] : array();
-            $feedFilterModel = new $feedFilterModel($args);
+            $filterModel = new $filterModel($args);
         } else {
-            Mage::throwException('Unable to handle feed attribute :: ' . print_r($feedFilter, true));
+            Mage::throwException('Unable to handle feed filter :: ' . print_r($feedFilter, true));
         }
 
-        return $feedFilterModel;
+        return $filterModel;
     }
 
     protected function _addDataFields()
@@ -109,18 +106,18 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
 
     protected function _writeItems()
     {
-        while($item = $this->_dataIteratorModelModel->getCollectionItem()){
+        while($item = $this->_dataIteratorModel->getCollectionItem()){
             $this->_writerModel->writeItem($item);
         }
     }
 
     protected function _writeFeed()
     {
-        foreach ($this->_dataModel->getSections() as $section) {
+        foreach ($this->_writerModel->getSections() as $section) {
             if ($section == Space48_FeedBuilder_Model_Writer_Abstract::SECTION_ITEMS) {
                 $this->_writeItems();
             } else {
-                $this->_dataModel->writeSection($section);
+                $this->_writerModel->writeSection($section);
             }
         }
     }
@@ -135,10 +132,12 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
 
         $this->_initialiseDataModel();
         $this->_initialiseWriterModel();
-        $this->_initialiseDataIteratorModel();
 
         $this->_addDataFields();
         $this->_addDataFilters();
+
+        $this->_initialiseDataIteratorModel();
+
         $this->_writeFeed();
     }
 }

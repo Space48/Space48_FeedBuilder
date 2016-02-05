@@ -18,7 +18,7 @@ class Space48_FeedBuilder_Model_Writer_Csv
     {
         switch ($section) {
             case self::SECTION_HEADER:
-                $this->_writeToHandle($this->_feedData->getFields());
+                $this->_writeToHandle($this->_dataModel->getFields());
                 break;
             default:
                 Mage::throwException('No function available to write section : '. $section);
@@ -32,7 +32,7 @@ class Space48_FeedBuilder_Model_Writer_Csv
          * @var  $fieldName string
          * @var  $feedAttribute Space48_FeedBuilder_Model_Data_Attribute_Abstract
          */
-        foreach ($this->_feedData->getFeedAttributes() as $fieldName => $feedAttribute) {
+        foreach ($this->_dataModel->getFeedAttributes() as $fieldName => $feedAttribute) {
             $itemData[] = $feedAttribute->getValue($item);
         }
 

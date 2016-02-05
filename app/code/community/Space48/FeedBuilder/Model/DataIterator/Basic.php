@@ -11,7 +11,7 @@ class Space48_FeedBuilder_Model_DataIterator_Basic
 
         $this->_currentItemPosition++;
         return $this->_collection ?
-            $this->_collection[ $this->_currentItemPosition - 1] :
+            $this->_itemReferences[ $this->_currentItemPosition - 1] :
             false;
     }
 }

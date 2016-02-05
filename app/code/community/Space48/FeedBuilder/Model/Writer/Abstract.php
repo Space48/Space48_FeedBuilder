@@ -8,14 +8,15 @@ abstract class Space48_FeedBuilder_Model_Writer_Abstract extends Mage_Core_Model
 
     protected $_fileName;
     /** @var Space48_FeedBuilder_Model_Data_Abstract  */
-    protected $_feedData;
+    protected $_dataModel;
     protected $_feedType;
     protected $_fileHandle;
 
-    public function __construct($fileName)
+    public function __construct($fileName, Space48_FeedBuilder_Model_Data_Abstract $dataModel)
     {
         $this->_fileName = Mage::getBaseDir() . '/' .$fileName;
         $this->_fileHandle = $this->_openFileHandle();
+        $this->_dataModel = $dataModel;
     }
 
     public function __destruct()

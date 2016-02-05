@@ -47,7 +47,7 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
      */
     public function updateSchedule()
     {
-        $scheduleAheadFor = Mage::getStoreConfig(Mage_Cron_Model_Observer::XML_PATH_SCHEDULE_AHEAD_FOR)*600;
+        $scheduleAheadFor = Mage::getStoreConfig(Mage_Cron_Model_Observer::XML_PATH_SCHEDULE_AHEAD_FOR)*60*60*24;
         $allFeeds = Mage::getModel('space48_feedbuilder/runner')->getAllFeeds();
 
         foreach ($allFeeds as $feedReference => $feed) {

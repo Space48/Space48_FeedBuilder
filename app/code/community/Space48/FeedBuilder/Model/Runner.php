@@ -119,6 +119,9 @@ class Space48_FeedBuilder_Model_Runner
          * @var  $feedModel Space48_FeedBuilder_Model_Feed
          */
         foreach ($this->_getFeedsToRun($feedReferenceType) as $feedReference => $feedModel) {
+
+            /* @Todo refactor _setFeedStartedAtIfScheduled and _setFeedFinishedAtIfScheduled */
+
             $this->_setFeedStartedAtIfScheduled($feedReference, $feedReferenceType);
             $feedModel->createFeed();
             $this->_setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType);

@@ -3,27 +3,30 @@
 class Space48_FeedBuilder_Model_Writer_Csv
     extends Space48_FeedBuilder_Model_Writer_Abstract
 {
+
+    public function getSections()
+    {
+        return array(self::SECTION_HEADER, self::SECTION_ITEMS);
+    }
+
     protected function _writeToHandle($fields)
     {
         fputcsv($this->_fileHandle, $fields);
     }
 
-    public function writeHeader()
+    public function writeSection($section)
     {
-        $this->_writeToHandle($this->_feedData->getFields());
+        switch ($section) {
+            case self::SECTION_HEADER:
+                $this->_writeToHandle($this->_feedData->getFields());
+                break;
+            default:
+                Mage::throwException('No function available to write section : '. $section);
+        }
     }
 
-    public function writeItem(Mage_Core_Model_Abstract $item)
+    public function writeItem(Varien_Object $item)
     {
-        /** @TODO : Move this piece of functionality to the data model */
-        /**
-         * @var  $fieldName string
-         * @var  $feedAttribute Space48_FeedBuilder_Model_Data_Attribute_Abstract
-         */
-        foreach ($this->_feedData->getFeedAttributes() as $fieldName => $feedAttribute) {
-            $item = $feedAttribute->addCalculatedField($item);
-        }
-
         $itemData = array();
         /**
          * @var  $fieldName string

@@ -17,14 +17,14 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
         return $this->getStatus() == self::STATUS_DISABLED;
     }
 
-    protected function _initialiseDataModel()
+    protected function _initialiseDataModel($feedConfig)
     {
         if (!($dataModel = $this->getDataModel('class'))) {
             Mage::throwException('Feed data model not defined');
         } elseif (!class_exists($dataModel)) {
             Mage::throwException('Feed data model does not exist :: ' . $dataModel);
         } else {
-            $this->_dataModel = new $dataModel();
+            $this->_dataModel = new $dataModel($feedConfig);
         }
     }
 
@@ -48,59 +48,6 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
             Mage::throwException('Feed writer model does not exist :: ' . $writerModel);
         } else {
             $this->_writerModel = new $writerModel($this->getFileName(), $this->_dataModel);
-        }
-    }
-
-    protected function _getAttributeModel($feedAttribute)
-    {
-        if (is_string($feedAttribute)) {
-            $feedAttributeModel = Mage::getModel('space48_feedbuilder/data_attribute_basic');
-            $feedAttributeModel->setDataField($feedAttribute);
-        } elseif (is_array($feedAttribute) && isset($feedAttribute['class'])) {
-            $feedAttributeModel = $feedAttribute['class'];
-            if (!class_exists($feedAttributeModel)) {
-                Mage::throwException('Attribute model does not exist :: ' . $feedAttributeModel);
-            }
-
-            $args = isset($feedAttribute['args']) ? $feedAttribute['args'] : array();
-            $feedAttributeModel = new $feedAttributeModel($args);
-        } else {
-            Mage::throwException('Unable to handle feed attribute :: ' . print_r($feedAttribute, true));
-        }
-
-        return $feedAttributeModel;
-    }
-
-    protected function _getFilterModel($feedFilter)
-    {
-        if (is_array($feedFilter) && isset($feedFilter['class'])) {
-            $filterModel = $feedFilter['class'];
-            if (!class_exists($filterModel)) {
-                Mage::throwException('Attribute model does not exist :: ' . $filterModel);
-            }
-
-            $args = isset($feedFilter['args']) ? $feedFilter['args'] : array();
-            $filterModel = new $filterModel($args);
-        } else {
-            Mage::throwException('Unable to handle feed filter :: ' . print_r($feedFilter, true));
-        }
-
-        return $filterModel;
-    }
-
-    protected function _addDataFields()
-    {
-        foreach ($this->getFields() as $feedField => $feedAttribute) {
-            $attributeModel = $this->_getAttributeModel($feedAttribute);
-            $this->_dataModel->addFeedAttribute($feedField, $attributeModel);
-        }
-    }
-
-    protected function _addDataFilters()
-    {
-        foreach ($this->getFilters() as $feedFilterName => $feedFilter) {
-            $filterModel = $this->_getFilterModel($feedFilter);
-            $this->_dataModel->addFeedFilter($feedFilterName, $filterModel);
         }
     }
 
@@ -130,12 +77,9 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
         }
         echo $this->getName() .' :: creating'.PHP_EOL;
 
-        $this->_initialiseDataModel();
+        $feedConfig = $this->getData();
+        $this->_initialiseDataModel($feedConfig);
         $this->_initialiseWriterModel();
-
-        $this->_addDataFields();
-        $this->_addDataFilters();
-
         $this->_initialiseDataIteratorModel();
 
         $this->_writeFeed();

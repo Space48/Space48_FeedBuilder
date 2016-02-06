@@ -18,7 +18,7 @@ class Space48_FeedBuilder_Model_Writer_Csv
     {
         switch ($section) {
             case self::SECTION_HEADER:
-                $this->_writeToHandle($this->_dataModel->getFields());
+                $this->_writeToHandle($this->_dataModel->getFeedFields());
                 break;
             default:
                 Mage::throwException('No function available to write section : '. $section);

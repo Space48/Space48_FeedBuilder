@@ -6,10 +6,26 @@
         </Space48_FeedBuilder>
     </modules>
     <global>
+        <resources>
+            <space48_feedbuilder_setup>
+                <setup>
+                    <module>Space48_FeedBuilder</module>
+                </setup>
+            </space48_feedbuilder_setup>
+        </resources>
         <models>
             <space48_feedbuilder>
                 <class>Space48_FeedBuilder_Model</class>
+                <resourceModel>s48feedbuilder_resource</resourceModel>
             </space48_feedbuilder>
+            <s48feedbuilder_resource>
+                <class>Space48_FeedBuilder_Model_Resource</class>
+                <entities>
+                    <cron_schedule>
+                        <table>feedbuilder_schedule</table>
+                    </cron_schedule>
+                </entities>
+            </s48feedbuilder_resource>
         </models>
         <helpers>
             <space48_feebuilder>

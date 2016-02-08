@@ -1,6 +1,7 @@
 <?php
 
 class Space48_FeedBuilder_Model_Data_Abstract
+    extends Mage_Core_Model_Abstract
 {
     /** @var  Varien_Data_Collection */
     protected $_collection;
@@ -8,18 +9,70 @@ class Space48_FeedBuilder_Model_Data_Abstract
     protected $_currentIteration = 0;
     protected $_maxIterations;
     protected $_lastPage;
-    protected $_feedAttributes = array();
-    protected $_feedFilters = array();
+    protected $_attributes = array();
+    protected $_filters = array();
 
-    public function addFeedAttribute($feedFieldName, Space48_FeedBuilder_Model_Data_Attribute_Abstract $attributeModel) {
-        $this->_feedAttributes[$feedFieldName] = $attributeModel;
+    protected function _applyConfig()
+    {
+        $this->_addAttributes();
+        $this->_addFilters();
+        $this->_applyCollectionJoins();
+        $this->_applyCollectionAttributes();
+        $this->_applyCollectionFilters();
     }
 
-    public function addFeedFilter($feedFieldFilterName, Space48_FeedBuilder_Model_Data_Filter_Abstract $filterModel) {
-        $this->_feedFilters[$feedFieldFilterName] = $filterModel;
+    protected function _getAttributeModel($attribute)
+    {
+        if (is_string($attribute)) {
+            $attributeModel = Mage::getModel('space48_feedbuilder/data_attribute_basic');
+            $attributeModel->setDataField($attribute);
+        } elseif (is_array($attribute) && isset($attribute['class'])) {
+            $attributeModel = $attribute['class'];
+            if (!class_exists($attributeModel)) {
+                Mage::throwException('Attribute model does not exist :: ' . $attributeModel);
+            }
+
+            $args = isset($attribute['args']) ? $attribute['args'] : array();
+            $attributeModel = new $attributeModel($args);
+        } else {
+            Mage::throwException('Unable to handle feed attribute :: ' . print_r($attribute, true));
+        }
+
+        return $attributeModel;
     }
 
-    protected function _addCollectionJoins()
+    protected function _getFilterModel($filter)
+    {
+        if (is_array($filter) && isset($filter['class'])) {
+            $filterModel = $filter['class'];
+            if (!class_exists($filterModel)) {
+                Mage::throwException('Attribute model does not exist :: ' . $filterModel);
+            }
+
+            $args = isset($filter['args']) ? $filter['args'] : array();
+            $filterModel = new $filterModel($args);
+        } else {
+            Mage::throwException('Unable to handle feed filter :: ' . print_r($filter, true));
+        }
+
+        return $filterModel;
+    }
+
+    protected function _addAttributes()
+    {
+        foreach ($this->getFields() as $feedField => $feedAttribute) {
+            $this->_attributes[$feedField] = $this->_getAttributeModel($feedAttribute);
+        }
+    }
+
+    protected function _addFilters()
+    {
+        foreach ($this->getFilters() as $feedFilterName => $feedFilter) {
+            $this->_filters[$feedFilterName] = $this->_getFilterModel($feedFilter);
+        }
+    }
+
+    protected function _applyCollectionJoins()
     {
         /**
          * @var  $feedFieldName string
@@ -30,7 +83,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
         }
     }
 
-    protected function _addCollectionAttributes()
+    protected function _applyCollectionAttributes()
     {
         /**
          * @var  $feedFieldName string
@@ -41,41 +94,28 @@ class Space48_FeedBuilder_Model_Data_Abstract
         }
     }
 
-    protected function _addCollectionFilters()
+    protected function _applyCollectionFilters()
     {
         /**
          * @var  $feedFilterName string
          * @var  $filterModel Space48_FeedBuilder_Model_Data_Filter_Abstract
          */
-        foreach ($this->getFeedFilters() as $feedFilterName => $filterModel) {
+        foreach ($this->_getFilters() as $feedFilterName => $filterModel) {
             $this->_collection = $filterModel->addFilter($this->_collection);
         }
     }
 
-    protected function _addCalculatedFields($item)
-    {
-        /**
-         * @var  $feedFieldName string
-         * @var  $attributeModel Space48_FeedBuilder_Model_Data_Attribute_Abstract
-         */
-        foreach ($this->getFeedAttributes() as $feedFieldName => $attributeModel) {
-            $item = $attributeModel->addCalculatedField($item);
-        }
-
-        return $item;
-    }
-
     public function getFeedAttributes()
     {
-        return $this->_feedAttributes;
+        return $this->_attributes;
     }
 
-    public function getFeedFilters()
+    protected function _getFilters()
     {
-        return $this->_feedFilters;
+        return $this->_filters;
     }
 
-    public function getFields()
+    public function getFeedFields()
     {
         return array_keys($this->getFeedAttributes());
     }
@@ -112,9 +152,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
         if (!$this->_collection) {
             Mage::throwException('Collection not set for Feedbuilder');
         } elseif (is_null($this->_lastPage)) {
-            $this->_addCollectionJoins();
-            $this->_addCollectionAttributes();
-            $this->_addCollectionFilters();
+            $this->_applyConfig();
         }
 
         $this->_currentIteration++;

@@ -45,8 +45,8 @@ class Space48_FeedBuilder_Model_Runner
 
     protected function _getScheduledFeeds()
     {
-        /* @TODO : MAKE THIS ONLY RETURN SCHEDULED FEEDS */
-        return $this->getAllFeeds();
+	    return Mage::getModel('space48_feedbuilder/cron_schedule')
+                            ->getScheduledFeeds();
     }
 
     protected function _getFeedsToRun($feedReference)
@@ -70,6 +70,36 @@ class Space48_FeedBuilder_Model_Runner
         return $feedsToRun;
     }
 
+    protected function _isFeedScheduled($feedReferenceType)
+    {
+        if ($feedReferenceType == self::REFERENCE_SCHEDULED_FEEDS) {
+            return Mage::getModel('space48_feedbuilder/cron_schedule');
+        }
+    }
+
+    protected function _setFeedStartedAtIfScheduled($feedReference, $feedReferenceType)
+    {
+        if ($cronSchedule = $this->_isFeedScheduled($feedReferenceType)) {
+            $cronSchedule->setFeedStartedAt($feedReference);
+        }
+    }
+
+    protected function _setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType)
+    {
+        if ($cronSchedule = $this->_isFeedScheduled($feedReferenceType)) {
+            $cronSchedule->setFeedFinishedAt($feedReference);
+        }
+    }
+
+    protected function _setFeedReferenceTypeWhenRunAsCron($feedReferenceType)
+    {
+        if (is_object($feedReferenceType) && $feedReferenceType instanceof Mage_Cron_Model_Schedule ) {
+            return self::REFERENCE_SCHEDULED_FEEDS;
+        }
+
+        return $feedReferenceType;
+    }
+
     public function getAllFeeds()
     {
         if (!$this->_allFeeds) {
@@ -80,15 +110,21 @@ class Space48_FeedBuilder_Model_Runner
         return $this->_allFeeds;
     }
 
-    public function run($feedReference = self::REFERENCE_SCHEDULED_FEEDS)
+    public function run($feedReferenceType = self::REFERENCE_SCHEDULED_FEEDS)
     {
+        $feedReferenceType = $this->_setFeedReferenceTypeWhenRunAsCron($feedReferenceType);
+
         /**
          * @var  $feedReference string
          * @var  $feedModel Space48_FeedBuilder_Model_Feed
          */
-        foreach ($this->_getFeedsToRun($feedReference) as $feedReference => $feedModel) {
-            $feedModel->createFeed();
-        }
+        foreach ($this->_getFeedsToRun($feedReferenceType) as $feedReference => $feedModel) {
 
+            /* @Todo refactor _setFeedStartedAtIfScheduled and _setFeedFinishedAtIfScheduled */
+
+            $this->_setFeedStartedAtIfScheduled($feedReference, $feedReferenceType);
+            $feedModel->createFeed();
+            $this->_setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType);
+        }
     }
 }

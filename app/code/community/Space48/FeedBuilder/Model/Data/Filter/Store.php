@@ -2,6 +2,11 @@
 
 class Space48_FeedBuilder_Model_Data_Filter_Store extends Space48_FeedBuilder_Model_Data_Filter_Abstract
 {
+    public function addFilter(Varien_Data_Collection $collection)
+    {
+        return $collection->addStoreFilter($this->getArgStoreId());
+    }
+
     protected function getArgStoreId()
     {
         if ($this->getStoreId()) {
@@ -13,18 +18,18 @@ class Space48_FeedBuilder_Model_Data_Filter_Store extends Space48_FeedBuilder_Mo
             Mage::throwException('one of store id or store code must be supplied');
         }
 
-        $this->setDefaultStore($storeId);
+        $this->setRegistryStoreId($storeId);
 
         return $storeId;
     }
 
-    protected function setDefaultStore($storeId)
+    private function setRegistryStoreId($storeId)
     {
-        Mage::app()->setCurrentStore($storeId);
-    }
+        $currentRegistryStoreId = Mage::registry('feed_store_id');
+        if (isset($currentRegistryStoreId)) {
+            Mage::unregister('feed_store_id');
+        }
 
-    public function addFilter(Varien_Data_Collection $collection)
-    {
-        return $collection->addStoreFilter($this->getArgStoreId());
+        Mage::register('feed_store_id', $storeId);
     }
 }

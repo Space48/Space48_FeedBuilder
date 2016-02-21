@@ -18,6 +18,8 @@ class Space48_FeedBuilder_Model_Data_Filter_Store extends Space48_FeedBuilder_Mo
 
     public function addFilter(Varien_Data_Collection $collection)
     {
-        return $collection->addStoreFilter($this->getArgStoreId());
+        $storeId = $this->getArgStoreId();
+        Mage::app()->setCurrentStore($storeId);
+        return $collection->addStoreFilter($storeId)->setStoreId($storeId);
     }
 }

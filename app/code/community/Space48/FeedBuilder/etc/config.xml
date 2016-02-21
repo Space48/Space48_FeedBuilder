@@ -26,6 +26,11 @@
                     </cron_schedule>
                 </entities>
             </s48feedbuilder_resource>
+            <catalog_resource>
+                <rewrite>
+                    <product_collection>Space48_FeedBuilder_Model_Resource_Catalog_Product_Collection</product_collection>
+                </rewrite>
+            </catalog_resource>
         </models>
         <helpers>
             <space48_feebuilder>

@@ -12,7 +12,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
     protected function _getBasicProductCollection()
     {
-        return Mage::getModel('catalog/product')->getCollection();
+        return Mage::getModel('space48_feedbuilder/resource_catalog_product_collection');
     }
 
     protected function _getChildCollection(array $childrenIds)

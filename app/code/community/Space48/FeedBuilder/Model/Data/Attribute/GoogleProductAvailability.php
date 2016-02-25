@@ -1,6 +1,6 @@
 <?php
 
-class Space48_FeedBuilder_Model_Data_Attribute_GoogleProductAvailability extends Space48_RegisFeeds_Model_Data_Attribute_ProductIsInStock
+class Space48_FeedBuilder_Model_Data_Attribute_GoogleProductAvailability extends Space48_FeedBuilder_Model_Data_Attribute_ProductIsInStock
 {
     const GOOGLE_IN_STOCK = 'in stock';
     const GOOGLE_OUT_OF_STOCK = 'out of stock';

@@ -2,6 +2,10 @@
 
 abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Mage_Core_Model_Abstract
 {
+    const FORCE_CASE_LOWER = 'lower';
+    const FORCE_CASE_UPPER = 'upper';
+    const FORCE_CASE_TITLE = 'title';
+
     protected $_dataField = 's48_abstract';
 
     public function addCollectionJoin(Varien_Data_Collection $collection)
@@ -69,7 +73,7 @@ abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Mage_Co
     }
 
     protected function _stripLineBreaks($value) {
-        return preg_replace("\r|\n", '', $value);
+        return preg_replace('/\r|\n/', ' ', $value);
     }
 
     protected function _stripHtmlTags($value) {

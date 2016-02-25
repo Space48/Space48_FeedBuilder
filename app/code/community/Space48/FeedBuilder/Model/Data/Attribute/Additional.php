@@ -2,12 +2,16 @@
 
 class Space48_FeedBuilder_Model_Data_Attribute_Additional extends Space48_FeedBuilder_Model_Data_Attribute_Abstract
 {
+    const FORCE_CASE_LOWER = 'lower';
+    const FORCE_CASE_UPPER = 'upper';
+    const FORCE_CASE_TITLE = 'title';
+
     public function addCollectionAttribute(Varien_Data_Collection $collection)
     {
         return $collection->addAttributeToSelect($this->getAttributeCode());
     }
 
-    public function getValue(Mage_Core_Model_Abstract $model)
+    protected function _getValue(Mage_Core_Model_Abstract $model)
     {
         $value = $model->getData($this->getAttributeCode());
 

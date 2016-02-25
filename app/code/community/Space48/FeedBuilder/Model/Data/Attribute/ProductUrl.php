@@ -7,8 +7,9 @@ class Space48_FeedBuilder_Model_Data_Attribute_ProductUrl extends Space48_FeedBu
         return $collection->addUrlRewrite();
     }
 
-    public function getValue(Mage_Core_Model_Abstract $model)
+    protected function _getValue(Mage_Core_Model_Abstract $model)
     {
-        return $model->getProductUrl();
+        /* @TODO : find core way of find url without manually removing script name */
+        return str_replace($_SERVER['SCRIPT_NAME'] . '/', '', $model->getProductUrl());
     }
 }

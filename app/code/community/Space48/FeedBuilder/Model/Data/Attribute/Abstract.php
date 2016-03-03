@@ -1,6 +1,6 @@
 <?php
 
-abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Mage_Core_Model_Abstract
+abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Varien_Object
 {
     const FORCE_CASE_LOWER = 'lower';
     const FORCE_CASE_UPPER = 'upper';
@@ -48,7 +48,7 @@ abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Mage_Co
 
     protected function _getValue(Mage_Core_Model_Abstract $model)
     {
-        $model->getData($this->_dataField);
+        return $model->getData($this->_dataField);
     }
 
     protected function _forceCase($value, $forcedCase )

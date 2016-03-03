@@ -4,7 +4,7 @@ class Space48_FeedBuilder_Model_Data_Attribute_ProductIsInStock extends Space48_
 {
     protected $_dataField = 's48_is_in_stock';
 
-    public function addCollectionJoin(Varien_Data_Collection $collection)
+    public function addCollectionJoin(Mage_Catalog_Model_Resource_Product_Collection $collection)
     {
         return $collection->joinField($this->_dataField,
             'cataloginventory/stock_item',

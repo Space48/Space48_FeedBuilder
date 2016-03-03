@@ -12,7 +12,7 @@ abstract class Space48_FeedBuilder_Model_DataIterator_Abstract
     public function __construct(Space48_FeedBuilder_Model_Data_Abstract $dataModel)
     {
         $this->_dataModel = $dataModel;
-        $this->_getIterationOfCollection();
+        $this->_initNextIterationOfCollection();
     }
 
     protected function _setItemReferenceArray()
@@ -23,13 +23,18 @@ abstract class Space48_FeedBuilder_Model_DataIterator_Abstract
         }
     }
 
-    protected function _getIterationOfCollection()
+    /**
+     *
+     */
+    protected function _initNextIterationOfCollection()
     {
         $this->_currentItemPosition = 0;
         $this->_collection = $this->_dataModel->getIterationOfCollection();
         $this->_setItemReferenceArray();
     }
 
-
+    /**
+     * @return Varien_Object
+     */
     abstract public function getCollectionItem();
 }

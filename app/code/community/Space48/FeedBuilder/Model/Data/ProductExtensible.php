@@ -3,7 +3,10 @@
 class Space48_FeedBuilder_Model_Data_ProductExtensible
     extends Space48_FeedBuilder_Model_Data_Abstract
 {
-    protected $_productTypeFilters = array('Space48_FeedBuilder_Model_Data_Filter_ProductsSimpleOrParent');
+    protected $_parentSpecificFilters = array(
+        'Space48_FeedBuilder_Model_Data_Filter_ProductsSimpleOrParent',
+        'Space48_FeedBuilder_Model_Data_Filter_VisibleProducts'
+        );
 
     public function _construct()
     {
@@ -19,10 +22,10 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
     {
         return Mage::getModel('catalog/product')
                 ->getCollection()
-                ->addIdFilter($childrenIds[0]);
+                ->addIdFilter($childrenIds);
     }
 
-    protected function _removeProductTypeFilter($feedConfig)
+    protected function _removeParentSpecificFilters($feedConfig)
     {
         if (!isset($feedConfig['filters'])) {
             return $feedConfig;
@@ -31,7 +34,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
         $filters = array();
         foreach ($feedConfig['filters'] as $filterName => $filterConfig) {
             if (!isset($filterConfig['class'])
-                || ! in_array($filterConfig['class'], $this->_productTypeFilters)) {
+                || ! in_array($filterConfig['class'], $this->_parentSpecificFilters)) {
                 $filters[$filterName] = $filterConfig;
             }
         }
@@ -47,7 +50,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
             Mage::throwException('Feed data model for child collection does not exist :: ' . $dataModel);
         } else {
             $feedConfig = $this->getData();
-            $feedConfig = $this->_removeProductTypeFilter($feedConfig);
+            $feedConfig = $this->_removeParentSpecificFilters($feedConfig);
             return new $dataModel($feedConfig);
         }
     }
@@ -55,11 +58,11 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
     public function getChildItems(Mage_Catalog_Model_Product $parentProduct)
     {
         $childDataModel = $this->_getChildDataModel();
-        $childrenIds = $parentProduct->getTypeInstance()->getChildrenIds($parentProduct->getId());
-        if(!$childrenIds) {
+        $groupedChildrenIds = $parentProduct->getTypeInstance()->getChildrenIds($parentProduct->getId());
+        if(!$groupedChildrenIds) {
             return false;
         }
-        $childDataModel->setCollection($this->_getChildCollection($childrenIds));
+        $childDataModel->setCollection($this->_getChildCollection($groupedChildrenIds[0]));
         $childDataModel->setItemsPerIteration(null);
         return $childDataModel->getIterationOfCollection();
     }

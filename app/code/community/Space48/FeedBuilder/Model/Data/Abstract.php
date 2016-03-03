@@ -126,7 +126,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
             ($this->_maxIterations && $this->_currentIteration > $this->_maxIterations);
     }
 
-    public function setCollection(Varien_Data_Collection $collection)
+    protected function setCollection(Varien_Data_Collection $collection)
     {
         $this->_collection = $collection;
     }

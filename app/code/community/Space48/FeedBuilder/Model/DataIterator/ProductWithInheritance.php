@@ -10,9 +10,17 @@
 class Space48_FeedBuilder_Model_DataIterator_ProductWithInheritance
     extends Space48_FeedBuilder_Model_DataIterator_Abstract
 {
+    /** @var  Space48_FeedBuilder_Model_Data_ProductExtensible */
+    protected $_dataModel;
+    /** @var  Varien_Data_Collection */
     protected $_childCollection;
     protected $_currentChildItemPosition;
     protected $_childItemReferences = array();
+
+    public function __construct(Space48_FeedBuilder_Model_Data_ProductExtensible $dataModel)
+    {
+        parent::__construct($dataModel);
+    }
 
     protected function _setChildItemReferenceArray()
     {

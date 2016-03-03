@@ -1,0 +1,3 @@
+app/code/community/Space48/FeedBuilder app/code/community/Space48/FeedBuilder
+app/code/community/Space48/FeedBuilder/shell/feedBuilder.php shell/
+app/etc/modules/Space48_FeedBuilder.xml app/etc/modules/Space48_FeedBuilder.xml

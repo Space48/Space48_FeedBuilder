@@ -43,6 +43,10 @@ abstract class Space48_FeedBuilder_Model_Data_Attribute_Abstract extends Varien_
             $value = $this->_stripHtmlTags($value);
         }
 
+        if ($this->getSprintf()) {
+            $value = sprintf($this->getSprintf(),$value);
+        }
+
         return $value;
     }
 

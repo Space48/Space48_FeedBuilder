@@ -124,6 +124,7 @@ class Space48_FeedBuilder_Model_Runner
 
             $this->_setFeedStartedAtIfScheduled($feedReference, $feedReferenceType);
             $feedModel->createFeed();
+            $feedModel->sendFeed();
             $this->_setFeedFinishedAtIfScheduled($feedReference, $feedReferenceType);
         }
     }

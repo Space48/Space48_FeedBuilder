@@ -94,4 +94,18 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
 
         $this->_writeFeed();
     }
+
+    public function sendFeed()
+    {
+        if ($this->getSenderModel() && ($senderModel=$this->getSenderModel('class'))) {
+            if (!class_exists($senderModel)) {
+                Mage::throwException('Sender Model Doesn\'t Exist ;' . $senderModel);
+            }
+
+            $config = $this->getSenderModel();
+            $config['local_filename'] = $this->getFileName();
+            $senderModel = new $senderModel($config);
+            $senderModel->send();
+        }
+    }
 }

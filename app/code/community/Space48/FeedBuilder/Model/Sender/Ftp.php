@@ -27,34 +27,35 @@ class Space48_FeedBuilder_Model_Sender_Ftp extends  Space48_FeedBuilder_Model_Se
     public function send()
     {
         $ftpDetails = $this->_getFtpDetails();
-        print_r($ftpDetails);
+        $sendByFtp   = new Varien_Io_Ftp();
 
-        $upload   = new Varien_Io_Ftp();
-        echo ' OPEN FTP CONNECTION... ';
-        if ($upload->open($ftpDetails)==true) {
+        if ($sendByFtp->open($ftpDetails)==true) {
+
             $file = Mage::getBaseDir() . DS . $this->getData('local_filename');
-            echo 'FILE : ' . $file . ' --> ' . $this->_getPath() . $this->_getUploadName() . ' ';
-            $writeResult = $upload->write($this->_getPath() . $this->_getUploadName(), $file);
-            echo ' $writeResult : ' . implode('-',$writeResult) . ' <----';
-            $upload->close();
-            return;
-        } else {
-            Mage::throwException('CANNOT OPEN FTP!');
-        }
 
+            $writeResult = $sendByFtp->write($this->_getFtpPath() . $this->_getUploadName(), $file);
+
+            $sendByFtp->close();
+
+            if ($writeResult==false) {
+                Mage::throwException('Cannot Write to FTP in ' . get_class($this));
+            }
+            return;
+        }
+        Mage::throwException('Cannot Open FTP in ' . get_class($this));
     }
 
     protected function _getFtpDetails()
     {
-        $ftp = array(
+        $ftpDetails = array(
                 'host'     => $this->getData('host'),
                 'port'     => $this->getData('port'),
                 'user'     => $this->getData('user'),
                 'password' => $this->getData('password'),
-                'path'     => $this->_getPath()
+                'path'     => $this->_getFtpPath()
         );
-        $ftp['file_mode'] = $this->_getFtpMode();
-        return $ftp;
+        $ftpDetails['file_mode'] = $this->_getFtpMode();
+        return $ftpDetails;
     }
 
     protected function _getFtpMode() {
@@ -66,10 +67,10 @@ class Space48_FeedBuilder_Model_Sender_Ftp extends  Space48_FeedBuilder_Model_Se
         return FTP_BINARY;
     }
 
-    protected function _getPath()
+    protected function _getFtpPath()
     {
         if ($this->getData('target_path')) {
-            return rtrim($this->getData('target_path'),'/');
+            return '' . rtrim($this->getData('target_path'),'/');
         }
         return '';
     }

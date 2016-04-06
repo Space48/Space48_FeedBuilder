@@ -154,7 +154,13 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
         /** @var Mage_Catalog_Model_Product $child */
         foreach ($thisParentsChildren as $child) {
-            $child->setData(array_merge($parent->getData(), $child->getData()));
+            $childData = $child->getData();
+            foreach ($childData as $key => $value) {
+                if ( null === $childData[$key]){
+                    unset($childData[$key]);
+;                }
+            }
+            $child->setData(array_merge($parent->getData(), $childData));
             $childrenWithMergedData[] = $child;
         }
         return $childrenWithMergedData;

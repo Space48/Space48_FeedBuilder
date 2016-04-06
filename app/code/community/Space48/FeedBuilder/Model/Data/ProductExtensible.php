@@ -22,11 +22,15 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
     {
         $collection = Mage::getModel('catalog/product')
             ->getCollection();
-        $collection->getSelect()->joinInner(
-            array('link' => 'catalog_product_super_link'),
-            $collection->getConnection()->quoteInto("e.entity_id=link.product_id AND link.parent_id IN(?)", $parentIds),
-            array('parent_id')
-        );
+        $collection
+            ->getSelect()
+            ->joinInner(
+                array('link' => 'catalog_product_super_link'),
+                $collection->getConnection()->quoteInto("e.entity_id=link.product_id AND link.parent_id IN(?)", $parentIds),
+                array('parent_id')
+            )
+            ->group('entity_id');
+
         return $collection;
 
     }
@@ -83,15 +87,28 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
         /** @var Mage_Catalog_Model_Product $parentOrSimpleWithNoParent */
         $parentsAndSimplesWithNoParent = parent::getIterationOfCollection();
-        $children = $this->getChildItems($this->getParentIdsFromCollection($parentsAndSimplesWithNoParent));
+        try {
+            $children = $this->getChildItems($this->getParentIdsFromCollection($parentsAndSimplesWithNoParent));
+        } catch (Exception $e) {
+            echo 'ERROR (getting child products) : '.$e->getMessage().PHP_EOL;
+        }
+
 
         foreach ($parentsAndSimplesWithNoParent as $parentOrSimpleWithNoParent) {
             if ($this->isNonSimple($parentOrSimpleWithNoParent)) {
                 foreach ($this->getMergedChildrenProducts($parentOrSimpleWithNoParent, $children) as $child) {
-                    $mergedChildrenAndSimpleWithNoParent->addItem($child);
+                    try {
+                        $mergedChildrenAndSimpleWithNoParent->addItem($child);
+                    } catch (Exception $e) {
+                        echo 'ERROR (adding merged product) : '.$e->getMessage().PHP_EOL;
+                    }
                 }
             } else {
-                $mergedChildrenAndSimpleWithNoParent->addItem($parentOrSimpleWithNoParent);
+                try {
+                    $mergedChildrenAndSimpleWithNoParent->addItem($parentOrSimpleWithNoParent);
+                } catch (Exception $e) {
+                    echo 'ERROR (adding simple product) : '.$e->getMessage().PHP_EOL;
+                }
             }
         }
 
@@ -119,7 +136,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
                 $parentIds[] = $product->getId();
             }
         }
-        return $parentIds;
+        return array_unique($parentIds);
     }
 
     /**
@@ -129,8 +146,12 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
      */
     private function getMergedChildrenProducts(Mage_Catalog_Model_Product $parent, $children)
     {
-        $thisParentsChildren = $children->getItemsByColumnValue('parent_id', $parent->getId());
         $childrenWithMergedData = array();
+        if (!$parent || !$children) {
+            return $childrenWithMergedData;
+        }
+        $thisParentsChildren = $children->getItemsByColumnValue('parent_id', $parent->getId());
+
         /** @var Mage_Catalog_Model_Product $child */
         foreach ($thisParentsChildren as $child) {
             $child->setData(array_merge($parent->getData(), $child->getData()));

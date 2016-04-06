@@ -120,7 +120,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
         return array_keys($this->getFeedAttributes());
     }
 
-    protected function _isCollectionProcessingComplete()
+    public function isCollectionProcessingComplete()
     {
         return $this->_currentIteration > $this->_lastPage ||
             ($this->_maxIterations && $this->_currentIteration > $this->_maxIterations);
@@ -165,7 +165,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
 
         $this->_lastPage = $this->_collection->getLastPageNumber();
 
-        if ($this->_isCollectionProcessingComplete()) {
+        if ($this->isCollectionProcessingComplete()) {
             $this->_collection = false;
         }
 

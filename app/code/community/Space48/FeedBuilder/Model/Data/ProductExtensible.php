@@ -6,7 +6,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
     protected $_parentSpecificFilters = array(
         'Space48_FeedBuilder_Model_Data_Filter_ProductsSimpleOrParent',
         'Space48_FeedBuilder_Model_Data_Filter_VisibleProducts'
-        );
+    );
 
     public function _construct()
     {
@@ -154,11 +154,10 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
         /** @var Mage_Catalog_Model_Product $child */
         foreach ($thisParentsChildren as $child) {
-            $childData = $child->getData();
-            foreach ($childData as $key => $value) {
-                if ( null === $childData[$key]){
-                    unset($childData[$key]);
-;                }
+            foreach($child->getData() as $key => $data) {
+                if (!is_null($data)) {
+                    $childData[$key] = $data;
+                }
             }
             $child->setData(array_merge($parent->getData(), $childData));
             $childrenWithMergedData[] = $child;

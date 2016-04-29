@@ -29,7 +29,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
                 $collection->getConnection()->quoteInto("e.entity_id=link.product_id AND link.parent_id IN(?)", $parentIds),
                 array('parent_id')
             )
-            ->group('entity_id');
+            ->group('e.entity_id');
 
         return $collection;
 

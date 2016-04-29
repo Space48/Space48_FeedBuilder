@@ -154,6 +154,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
         /** @var Mage_Catalog_Model_Product $child */
         foreach ($thisParentsChildren as $child) {
+            $childData = array();
             foreach($child->getData() as $key => $data) {
                 if (!is_null($data)) {
                     $childData[$key] = $data;

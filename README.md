@@ -174,6 +174,6 @@ class Acme_Feeds_Model_Data_Attribute_GoogleProductDescription
 The feeds will run in cron as per the defined schedule for each feed.
 A shell script is availble to generate the feeds on demand if required :
 ```sh
-cd <magento base directory>/app/code/community/Space48/FeedBuilder/shell;
+cd <magento base directory>/shell;
 php feedBuilder.php --all-feeds
 ```

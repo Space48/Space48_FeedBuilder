@@ -144,7 +144,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
      * @param Mage_Catalog_Model_Product[] $children
      * @return Mage_Catalog_Model_Product[]
      */
-    private function getMergedChildrenProducts(Mage_Catalog_Model_Product $parent, $children)
+    protected function getMergedChildrenProducts(Mage_Catalog_Model_Product $parent, $children)
     {
         $childrenWithMergedData = array();
         if (!$parent || !$children) {

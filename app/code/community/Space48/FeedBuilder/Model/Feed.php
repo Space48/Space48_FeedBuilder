@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Class Space48_FeedBuilder_Model_Feed
+ * @method getDataIteratorModel($nodeIdentifier) Space48_FeedBuilder_Model_DataIterator_Abstract
+ * @method getWriterModel($nodeIdentifier) Space48_FeedBuilder_Model_Writer_Abstract
+ * @method getDataModel($nodeIdentifier) Space48_FeedBuilder_Model_Data_Abstract
+ * @method getStatus() string
+ * @method getFileName() string
+ * @method getName() string
+ */
+
 class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
 {
     const STATUS_DISABLED = 'disabled';
@@ -83,5 +93,19 @@ class Space48_FeedBuilder_Model_Feed extends Mage_Core_Model_Abstract
         $this->_initialiseDataIteratorModel();
 
         $this->_writeFeed();
+    }
+
+    public function sendFeed()
+    {
+        if ($this->getSenderModel() && ($senderModel=$this->getSenderModel('class'))) {
+            if (!class_exists($senderModel)) {
+                Mage::throwException('Sender Model Doesn\'t Exist ;' . $senderModel);
+            }
+
+            $config = $this->getSenderModel();
+            $config['local_filename'] = $this->getFileName();
+            $senderModel = new $senderModel($config);
+            $senderModel->send();
+        }
     }
 }

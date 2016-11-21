@@ -3,7 +3,10 @@
 class Space48_FeedBuilder_Model_Data_ProductExtensible
     extends Space48_FeedBuilder_Model_Data_Abstract
 {
-    protected $_productTypeFilters = array('Space48_FeedBuilder_Model_Data_Filter_ProductsSimpleOrParent');
+    protected $_parentSpecificFilters = array(
+        'Space48_FeedBuilder_Model_Data_Filter_ProductsSimpleOrParent',
+        'Space48_FeedBuilder_Model_Data_Filter_VisibleProducts'
+    );
 
     public function _construct()
     {
@@ -12,17 +15,27 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
     protected function _getBasicProductCollection()
     {
-        return Mage::getModel('catalog/product')->getCollection();
+        return Mage::getModel('space48_feedbuilder/resource_catalog_product_collection');
     }
 
-    protected function _getChildCollection(array $childrenIds)
+    protected function _getChildCollection(array $parentIds)
     {
-        return Mage::getModel('catalog/product')
-                ->getCollection()
-                ->addIdFilter($childrenIds[0]);
+        $collection = Mage::getModel('catalog/product')
+            ->getCollection();
+        $collection
+            ->getSelect()
+            ->joinInner(
+                array('link' => 'catalog_product_super_link'),
+                $collection->getConnection()->quoteInto("e.entity_id=link.product_id AND link.parent_id IN(?)", $parentIds),
+                array('parent_id')
+            )
+            ->group('e.entity_id');
+
+        return $collection;
+
     }
 
-    protected function _removeProductTypeFilter($feedConfig)
+    protected function _removeParentSpecificFilters($feedConfig)
     {
         if (!isset($feedConfig['filters'])) {
             return $feedConfig;
@@ -31,7 +44,7 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
         $filters = array();
         foreach ($feedConfig['filters'] as $filterName => $filterConfig) {
             if (!isset($filterConfig['class'])
-                || ! in_array($filterConfig['class'], $this->_productTypeFilters)) {
+                || ! in_array($filterConfig['class'], $this->_parentSpecificFilters)) {
                 $filters[$filterName] = $filterConfig;
             }
         }
@@ -39,28 +52,119 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
         return $feedConfig;
     }
 
+    /**
+     * @return self
+     */
     protected function _getChildDataModel()
     {
-        if (!($dataModel = $this->getDataModel('class'))) {
-            Mage::throwException('Feed data model for child collection not defined');
-        } elseif (!class_exists($dataModel)) {
-            Mage::throwException('Feed data model for child collection does not exist :: ' . $dataModel);
-        } else {
-            $feedConfig = $this->getData();
-            $feedConfig = $this->_removeProductTypeFilter($feedConfig);
-            return new $dataModel($feedConfig);
-        }
+        $feedConfig = $this->getData();
+        $feedConfig = $this->_removeParentSpecificFilters($feedConfig);
+        $dataModel = get_class($this);
+        return new $dataModel($feedConfig);
     }
 
-    public function getChildItems(Mage_Catalog_Model_Product $parentProduct)
+    /**
+     * @param Mage_Catalog_Model_Product $parentProduct
+     * @return Mage_Catalog_Model_Resource_Product_Collection
+     */
+    public function getChildItems(array $parentProductIds)
     {
-        $childDataModel = $this->_getChildDataModel();
-        $childrenIds = $parentProduct->getTypeInstance()->getChildrenIds($parentProduct->getId());
-        if(!$childrenIds) {
-            return false;
+        if (!$parentProductIds) {
+            return array();
         }
-        $childDataModel->setCollection($this->_getChildCollection($childrenIds));
+        $childDataModel = $this->_getChildDataModel();
+        $childDataModel->setCollection($this->_getChildCollection($parentProductIds));
         $childDataModel->setItemsPerIteration(null);
         return $childDataModel->getIterationOfCollection();
     }
+
+    /**
+     * @return Varien_Data_Collection
+     */
+    public function getIterationOfCollection()
+    {
+        $mergedChildrenAndSimpleWithNoParent = new Varien_Data_Collection();
+
+        /** @var Mage_Catalog_Model_Product $parentOrSimpleWithNoParent */
+        $parentsAndSimplesWithNoParent = parent::getIterationOfCollection();
+        try {
+            $children = $this->getChildItems($this->getParentIdsFromCollection($parentsAndSimplesWithNoParent));
+        } catch (Exception $e) {
+            echo 'ERROR (getting child products) : '.$e->getMessage().PHP_EOL;
+        }
+
+
+        foreach ($parentsAndSimplesWithNoParent as $parentOrSimpleWithNoParent) {
+            if ($this->isNonSimple($parentOrSimpleWithNoParent)) {
+                foreach ($this->getMergedChildrenProducts($parentOrSimpleWithNoParent, $children) as $child) {
+                    try {
+                        $mergedChildrenAndSimpleWithNoParent->addItem($child);
+                    } catch (Exception $e) {
+                        echo 'ERROR (adding merged product) : '.$e->getMessage().PHP_EOL;
+                    }
+                }
+            } else {
+                try {
+                    $mergedChildrenAndSimpleWithNoParent->addItem($parentOrSimpleWithNoParent);
+                } catch (Exception $e) {
+                    echo 'ERROR (adding simple product) : '.$e->getMessage().PHP_EOL;
+                }
+            }
+        }
+
+        return $mergedChildrenAndSimpleWithNoParent;
+    }
+
+    /**
+     * @param Mage_Catalog_Model_Product $parentOrSimpleWithNoParent
+     * @return bool
+     */
+    private function isNonSimple(Mage_Catalog_Model_Product $parentOrSimpleWithNoParent)
+    {
+        return $parentOrSimpleWithNoParent->getTypeId() !== Mage_Catalog_Model_Product_Type::TYPE_SIMPLE;
+    }
+
+    /**
+     * @param Mage_Catalog_Model_Resource_Product_Collection $parentsAndSimplesWithNoParent
+     * @return int[]
+     */
+    private function getParentIdsFromCollection(Mage_Catalog_Model_Resource_Product_Collection $parentsAndSimplesWithNoParent)
+    {
+        $parentIds = array();
+        foreach ($parentsAndSimplesWithNoParent as $product) {
+            if ($this->isNonSimple($product)) {
+                $parentIds[] = $product->getId();
+            }
+        }
+        return array_unique($parentIds);
+    }
+
+    /**
+     * @param Mage_Catalog_Model_Product $parent
+     * @param Mage_Catalog_Model_Product[] $children
+     * @return Mage_Catalog_Model_Product[]
+     */
+    private function getMergedChildrenProducts(Mage_Catalog_Model_Product $parent, $children)
+    {
+        $childrenWithMergedData = array();
+        if (!$parent || !$children) {
+            return $childrenWithMergedData;
+        }
+        $thisParentsChildren = $children->getItemsByColumnValue('parent_id', $parent->getId());
+
+        /** @var Mage_Catalog_Model_Product $child */
+        foreach ($thisParentsChildren as $child) {
+            $childData = array();
+            foreach($child->getData() as $key => $data) {
+                if (!is_null($data)) {
+                    $childData[$key] = $data;
+                }
+            }
+            $child->setData(array_merge($parent->getData(), $childData));
+            $childrenWithMergedData[] = $child;
+        }
+        return $childrenWithMergedData;
+    }
+
+
 }

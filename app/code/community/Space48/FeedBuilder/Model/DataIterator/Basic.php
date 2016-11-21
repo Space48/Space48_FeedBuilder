@@ -6,7 +6,7 @@ class Space48_FeedBuilder_Model_DataIterator_Basic
     public function getCollectionItem()
     {
         if ($this->_currentItemPosition >= $this->_collection->count()) {
-            $this->_getIterationOfCollection();
+            $this->_initNextIterationOfCollection();
         }
 
         $this->_currentItemPosition++;

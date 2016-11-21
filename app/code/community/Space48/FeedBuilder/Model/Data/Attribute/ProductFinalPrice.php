@@ -7,7 +7,7 @@ class Space48_FeedBuilder_Model_Data_Attribute_ProductFinalPrice extends Space48
         return $collection->addAttributeToSelect(array('price', 'special_price'));
     }
 
-    public function getValue(Mage_Core_Model_Abstract $model)
+    protected function _getValue(Mage_Core_Model_Abstract $model)
     {
         return sprintf("%.02f", $model->getFinalPrice());
     }

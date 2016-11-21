@@ -16,17 +16,12 @@ e.g. Mage::getModel('catalog/product')->load(1)
     for a specific store or product type.
     * *Writer Model (One per feed)* - This processes the data from the model and outputs appropriately. All logic 
 
-##Adding this module to a project repository
+##Adding this module to a project repository (using Modman)
 * Add this as a submodule of the project and create the relevant symbolic links by doing the following in shell :
 ```sh
 cd <root folder of web directory>;
-git submodule add <git repository url> .sub_repositories;
-git submodule update --init --recursive;
-mkdir -p app/code/community/Space48;
-cd app/etc/modules/;
-ln -s ../../../.sub_repositories/app/etc/modules/Space48_FeedBuilder.xml ./Space48_FeedBuilder.xml;
-cd ../../../app/code/community/Space48/;
-ln -s ../../../../app/code/community/Space48/FeedBuilder FeedBuilder;
+modman init
+modman clone git@github.com:Space48/Space48_FeedBuilder.git
 ```
 
 ##Creating a feed
@@ -179,6 +174,6 @@ class Acme_Feeds_Model_Data_Attribute_GoogleProductDescription
 The feeds will run in cron as per the defined schedule for each feed.
 A shell script is availble to generate the feeds on demand if required :
 ```sh
-cd <magento base directory>/app/code/community/Space48/FeedBuilder/shell;
+cd <magento base directory>/shell;
 php feedBuilder.php --all-feeds
 ```

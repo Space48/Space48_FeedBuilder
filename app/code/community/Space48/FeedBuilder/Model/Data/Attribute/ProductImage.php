@@ -10,7 +10,7 @@ class Space48_FeedBuilder_Model_Data_Attribute_ProductImage
         return $collection->addAttributeToSelect('small_image');
     }
 
-    public function getValue(Mage_Core_Model_Abstract $model)
+    protected function _getValue(Mage_Core_Model_Abstract $model)
     {
         return Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA) . 'catalog/product' . $model->getData($this->_dataField);
     }

@@ -1,6 +1,6 @@
 <?php
 
-abstract class Space48_FeedBuilder_Model_Writer_Abstract extends Mage_Core_Model_Abstract
+abstract class Space48_FeedBuilder_Model_Writer_Abstract
 {
     const SECTION_HEADER = 'header';
     const SECTION_ITEMS   = 'items';
@@ -12,6 +12,10 @@ abstract class Space48_FeedBuilder_Model_Writer_Abstract extends Mage_Core_Model
     protected $_feedType;
     protected $_fileHandle;
 
+    /**
+     * @param string $fileName
+     * @param Space48_FeedBuilder_Model_Data_Abstract $dataModel
+     */
     public function __construct($fileName, Space48_FeedBuilder_Model_Data_Abstract $dataModel)
     {
         $this->_fileName = Mage::getBaseDir() . '/' .$fileName;
@@ -42,6 +46,7 @@ abstract class Space48_FeedBuilder_Model_Writer_Abstract extends Mage_Core_Model
         fclose($this->_fileHandle);
     }
 
+    abstract public function writeSection($section);
     abstract public function writeItem(Varien_Object $item);
 
     protected function _writeToHandle($string)

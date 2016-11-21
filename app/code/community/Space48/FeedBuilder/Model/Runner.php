@@ -22,20 +22,30 @@ class Space48_FeedBuilder_Model_Runner
     {
         foreach ($feedConfigs as $feedReference => $feedConfig) {
             if (isset($feedConfig['inherit'])) {
-                $inheritedConfig = $this->_getSpecifiedFeedConfig($feedConfig['inherit'], $feedConfigs);
-                $inheritedConfig = array_merge($inheritedConfig, $feedConfig);
-                $feed = Mage::getModel('space48_feedbuilder/feed', $inheritedConfig);
-            } else {
-                $feed = Mage::getModel('space48_feedbuilder/feed', $feedConfig);
+                $feedConfig = $this->_extendInheritedConfig($feedConfig['inherit'], $feedReference);
             }
 
-            $this->_allFeeds[$feedReference] = $feed;
+            $this->_allFeeds[$feedReference] = Mage::getModel('space48_feedbuilder/feed', $feedConfig);
         }
     }
 
-    protected function _getSpecifiedFeedConfig($feedIdentifier, array $feedConfigs)
+    /**
+     * Allows a feed to inherit and overwrite another by merging their config XML nodes
+     *
+     * @param string $inheritFeedId
+     * @param string $extendFeedId
+     * @return array
+     */
+    protected function _extendInheritedConfig($inheritFeedId, $extendFeedId)
     {
-        return isset($feedConfigs[$feedIdentifier]) ? $feedConfigs[$feedIdentifier] : array();
+        $inheritedConfig = Mage::getConfig()->getNode(self::FEEDS_CONFIG_PATH . '/' . $inheritFeedId);
+        $extendConfig    = Mage::getConfig()->getNode(self::FEEDS_CONFIG_PATH . '/' . $extendFeedId);
+
+        if (!$inheritedConfig) {
+            return $extendConfig->asArray();
+        }
+
+        return $inheritedConfig->extend($extendConfig, true)->asArray();
     }
 
     protected function _getValidFeeds(array $requestedFeeds)

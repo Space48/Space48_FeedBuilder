@@ -32,6 +32,10 @@ abstract class Space48_FeedBuilder_Model_DataIterator_Abstract
         $this->_collection = $this->_dataModel->getIterationOfCollection();
         $this->_setItemReferenceArray();
 
+        if ($this->_collection === false) {
+            return false;
+        }
+
         if (!$this->_collection || !$this->_collection->count()
             && !$this->_dataModel->isCollectionProcessingComplete() ) {
             $this->_initNextIterationOfCollection();

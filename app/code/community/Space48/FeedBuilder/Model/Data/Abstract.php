@@ -122,7 +122,7 @@ class Space48_FeedBuilder_Model_Data_Abstract
 
     public function isCollectionProcessingComplete()
     {
-        return $this->_currentIteration > $this->_lastPage ||
+        return $this->_currentIteration >= $this->_lastPage ||
             ($this->_maxIterations && $this->_currentIteration > $this->_maxIterations);
     }
 
@@ -149,8 +149,10 @@ class Space48_FeedBuilder_Model_Data_Abstract
 
     public function getIterationOfCollection()
     {
-        if (!$this->_collection) {
+        if (is_null($this->_collection)) {
             Mage::throwException('Collection not set for Feedbuilder');
+        } elseif($this->_collection === false) {
+            return false;
         } elseif (is_null($this->_lastPage)) {
             $this->_applyConfig();
         }

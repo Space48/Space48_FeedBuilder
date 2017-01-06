@@ -35,6 +35,7 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
         if (! $schedule->getScheduledAt() ) {
             $needsScheduling = true;
         } elseif ($this->_hasScheduleCompleted($schedule)) {
+            $needsScheduling = true;
         } else {
             $needsScheduling = false;
         }
@@ -51,6 +52,14 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
         $allFeeds = Mage::getModel('space48_feedbuilder/runner')->getAllFeeds();
 
         foreach ($allFeeds as $feedReference => $feed) {
+
+            if ($feed->getStatus() == "disabled") {
+                Mage::getModel('space48_feedbuilder/cron_schedule')
+                    ->load($feedReference)
+                    ->delete();
+                continue;
+            }
+
             // Feed doesn't have a cron schedule
             if (!($cronExpr = $feed->getSchedule('cron_expr'))) {
                 continue;
@@ -66,7 +75,7 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
             if ($scheduledAt) {
                 $feedSchedule = Mage::getModel('space48_feedbuilder/cron_schedule')
                     ->load($feedReference)
-		    ->setFeedReference($feedReference)
+		            ->setFeedReference($feedReference)
                     ->setScheduledAt($scheduledAt)
                     ->save();
             }
@@ -144,7 +153,7 @@ class Space48_FeedBuilder_Model_Cron_Schedule extends Mage_Core_Model_Abstract
         /* @TODO : Refactor this code */
         $this->updateSchedule();
         $scheduledFeeds = $this->getCollection()
-            ->addFieldToFilter('scheduled_at', array('lte'=> $this->_executionTime ));
+            ->addFieldToFilter('scheduled_at', array('lt'=> $this->_executionTime ));
         $allFeeds = Mage::getModel('space48_feedbuilder/runner')->getAllFeeds();
 
         $returnArray = array();

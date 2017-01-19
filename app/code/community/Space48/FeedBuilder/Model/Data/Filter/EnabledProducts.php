@@ -6,7 +6,7 @@ class Space48_FeedBuilder_Model_Data_Filter_EnabledProducts extends Space48_Feed
     {
         return $collection->addAttributeToFilter(
             'status',
-            array('eq' => Mage_Catalog_Model_Product_Status::getVisibleStatusIds())
+            array('in' => Mage_Catalog_Model_Product_Status::getVisibleStatusIds())
         );
     }
 }

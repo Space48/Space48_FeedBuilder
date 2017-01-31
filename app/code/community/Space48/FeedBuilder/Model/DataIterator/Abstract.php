@@ -18,8 +18,10 @@ abstract class Space48_FeedBuilder_Model_DataIterator_Abstract
     protected function _setItemReferenceArray()
     {
         $this->_itemReferences = array();
-        foreach ($this->_collection as &$item) {
-            $this->_itemReferences[] = $item;
+        if($this->_collection || !empty($this->_collection)) {
+            foreach ($this->_collection as &$item) {
+                $this->_itemReferences[] = $item;
+            }
         }
     }
 

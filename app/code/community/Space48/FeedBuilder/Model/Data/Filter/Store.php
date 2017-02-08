@@ -2,7 +2,7 @@
 
 class Space48_FeedBuilder_Model_Data_Filter_Store extends Space48_FeedBuilder_Model_Data_Filter_Abstract
 {
-    public function addFilter(Varien_Data_Collection $collection)
+    public function addFilter(Mage_Eav_Model_Entity_Collection_Abstract $collection)
     {
         $storeId = $this->getArgStoreId();
         Mage::app()->setCurrentStore($storeId);

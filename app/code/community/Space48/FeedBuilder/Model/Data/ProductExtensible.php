@@ -87,6 +87,20 @@ class Space48_FeedBuilder_Model_Data_ProductExtensible
 
         /** @var Mage_Catalog_Model_Product $parentOrSimpleWithNoParent */
         $parentsAndSimplesWithNoParent = parent::getIterationOfCollection();
+
+        /**
+         * Keep in mind that parent::getIterationOfCollection() van return false.
+         * when that happens the following errors are logged:
+         * Warning: Invalid argument supplied for foreach() $this:134
+         * Warning: Invalid argument supplied for foreach() $this:97
+         * Argument 1 passed to Space48_FeedBuilder_Model_Data_ProductExtensible::getParentIdsFromCollection()
+         * must be an instance of Mage_Catalog_Model_Resource_Product_Collection, boolean given
+         * Line numbers are original line numbers.
+         */
+        if (!($parentsAndSimplesWithNoParent instanceof Mage_Catalog_Model_Resource_Product_Collection)) {
+            return $mergedChildrenAndSimpleWithNoParent;
+        }
+
         try {
             $children = $this->getChildItems($this->getParentIdsFromCollection($parentsAndSimplesWithNoParent));
         } catch (Exception $e) {

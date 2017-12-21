@@ -40,7 +40,13 @@ class Space48_FeedBuilder_Model_Runner
 
     protected function _getValidFeeds(array $requestedFeeds)
     {
-        return array_intersect($requestedFeeds, $this->getAllFeeds());
+        $validFeeds = array();
+        foreach ($requestedFeeds as $feedReference) {
+            if ( key_exists($feedReference, $this->_allFeeds) ) {
+                $validFeeds[] = $this->_allFeeds[$feedReference];
+            }
+        }
+        return $validFeeds;
     }
 
     protected function _getScheduledFeeds()
